@@ -1,0 +1,27 @@
+import pandas as pd
+
+# ---- CONFIGURATION ----
+input_file = 'sod1_dbsnp_data.csv'  # Change to your filename
+output_file = 'sod1_filtered_maf_gt_0.001.csv'
+maf_column = 'MAF'  # Make sure this matches the column name in your file
+variant_type_column = 'Variant_Type'  # If missense filtering is also needed
+delimiter = ','  # Use '\t' for TSV files
+
+# ---- LOAD DATA ----
+df = pd.read_csv(input_file, delimiter=delimiter)
+
+# ---- OPTIONAL: Filter for missense variants (if not pre-filtered) ----
+if variant_type_column in df.columns:
+    df = df[df[variant_type_column].str.lower() == 'missense']
+
+# ---- FILTER MAF > 0.001 ----
+# Convert MAF to numeric, errors='coerce' will turn non-numeric values to NaN
+df[maf_column] = pd.to_numeric(df[maf_column], errors='coerce')
+
+# Apply the inclusion criteria
+filtered_df = df[df[maf_column] > 0.001]
+
+# ---- SAVE TO FILE ----
+filtered_df.to_csv(output_file, index=False)
+
+print(f"Filtered data saved to: {output_file}")
