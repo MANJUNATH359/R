@@ -1,27 +1,31 @@
 import pandas as pd
 
-# ---- CONFIGURATION ----
-input_file = 'sod1_dbsnp_data.csv'  # Change to your filename
-output_file = 'sod1_filtered_maf_gt_0.001.csv'
-maf_column = 'MAF'  # Make sure this matches the column name in your file
-variant_type_column = 'Variant_Type'  # If missense filtering is also needed
-delimiter = ','  # Use '\t' for TSV files
+input_file = 'sod1_dbsnp_data.txt'  # Change this to your actual file name
+output_file = 'sod1_filtered_maf_gt_0.001.txt'
+maf_column = 'MAF'  # Make sure this matches your column name exactly
 
-# ---- LOAD DATA ----
-df = pd.read_csv(input_file, delimiter=delimiter)
+# Load the tab-delimited file
+try:
+    df = pd.read_csv(input_file, delimiter='\t')
+    print("File loaded successfully.")
+except Exception as e:
+    print(f"Error loading file: {e}")
+    exit()
 
-# ---- OPTIONAL: Filter for missense variants (if not pre-filtered) ----
-if variant_type_column in df.columns:
-    df = df[df[variant_type_column].str.lower() == 'missense']
+print("Columns detected:", df.columns.tolist())
 
-# ---- FILTER MAF > 0.001 ----
-# Convert MAF to numeric, errors='coerce' will turn non-numeric values to NaN
+# Check if MAF column exists
+if maf_column not in df.columns:
+    print(f"Column '{maf_column}' not found in file. Please check the column names.")
+    exit()
+
+# Convert MAF column to numeric, coerce errors to NaN
 df[maf_column] = pd.to_numeric(df[maf_column], errors='coerce')
 
-# Apply the inclusion criteria
+# Filter rows where MAF > 0.001
 filtered_df = df[df[maf_column] > 0.001]
 
-# ---- SAVE TO FILE ----
-filtered_df.to_csv(output_file, index=False)
+# Save filtered results to a new tab-delimited file
+filtered_df.to_csv(output_file, sep='\t', index=False)
 
 print(f"Filtered data saved to: {output_file}")
